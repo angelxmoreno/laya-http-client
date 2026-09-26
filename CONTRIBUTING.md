@@ -27,3 +27,12 @@ Hooks run lint + typecheck on commit (lefthook); commit messages must satisfy co
 ## Commits
 
 Conventional commits; release-please derives the changelog and version from them.
+
+## First release (one-time bootstrap)
+
+The release workflow publishes via OIDC trusted publishing (no `NPM_TOKEN`), but npm can only configure a trusted publisher for a package that already exists. So `laya-http-client`'s very first release needs a manual bootstrap — pick one:
+
+- Publish once locally (`npm publish --access public --provenance` won't work from a laptop; plain `npm publish --access public` with a login is fine for the bootstrap), then enable Trusted Publishing for the package on npmjs.com (Settings → Publishing access → add this GitHub repo + workflow `release.yml`).
+- Or create a granular `NPM_TOKEN` and add it as the repo secret just for the first run, then delete it.
+
+Every release after that works automatically.
