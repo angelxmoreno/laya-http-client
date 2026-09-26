@@ -33,6 +33,7 @@ const createDecider = <const Q extends { readonly [K in keyof Q]: LayaQuestion }
         const answers = validateAnswers(questions, response.answers);
         return {
             answers: answers as Answers<Q>,
+            model: response.model,
             usage: response.usage,
             routing: response.routing,
         };

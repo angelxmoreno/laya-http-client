@@ -1,9 +1,26 @@
 import { afterAll } from 'bun:test';
 
 const VALID_BODY = {
-    answers: { urgent: { probability: 0.9 } },
-    usage: { tokens: 3 },
-    routing: { model: 'aac6fef/laya-mlx' },
+    model: 'laya-rl-agent',
+    answers: {
+        urgent: { type: 'noul', noul: 0.9, confidence: 0.9, action: { act_probability: 0.42 } },
+        severity: {
+            type: 'score',
+            score: 1.4,
+            confidence: 0.8,
+            action: { act_probability: 0.42 },
+            legend: { '0': 'low', '1': 'medium', '2': 'high' },
+            probabilities: { '0': 0.2, '1': 0.5, '2': 0.3 },
+        },
+        department: {
+            type: 'choice',
+            choice: 'billing',
+            confidence: 0.94,
+            action: { act_probability: 0.42 },
+            probabilities: { billing: 0.7, technical: 0.3 },
+        },
+    },
+    usage: { input_tokens: 12, output_tokens: 0 },
 };
 
 /** Start an in-process stand-in for the FastAPI sidecar; sentinel request bodies trigger edge cases. */
