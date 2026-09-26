@@ -1,8 +1,20 @@
 # laya-mlx-client
 
-Typed HTTP client for the [Laya](https://huggingface.co/aac6fef/laya-mlx) "System 1" decision model, talking to the `laya-mlx-http.py` FastAPI sidecar.
+Typed HTTP client for the [Laya](https://github.com/NandhaKishorM/laya) "System 1" decision model over the official `POST /v1/systemone` wire protocol.
 
 Laya answers typed questions about a piece of text (the "state") in a single forward pass (~33 ms), returning calibrated probabilities. This package binds your questions once and returns fully inferred, per-question typed answers.
+
+## Which Laya is this?
+
+Three things share the name, and it matters for compatibility:
+
+| | What it is | HTTP server? |
+| --- | --- | --- |
+| [Convai Innovations](https://huggingface.co/convaiinnovations/laya) | The model weights (original) | — |
+| [NandhaKishorM/laya](https://github.com/NandhaKishorM/laya) | **The official runtime** (`pip install laya`) + `laya[serve]` HTTP server (`laya-serve`, Jev-compatible) | ✅ `POST /v1/systemone` |
+| [mizorewww/laya-mlx](https://github.com/mizorewww/laya-mlx) (HF [`aac6fef/laya-mlx`](https://huggingface.co/aac6fef/laya-mlx)) | Independent Apple-MLX port of the checkpoint + `laya_mlx` runtime. Not affiliated with the official project. | ❌ |
+
+This client targets the **official wire protocol** (`laya-serve`'s `/v1/systemone`). The sidecar we vendor wraps `laya_mlx` — the Apple Silicon stand-in for `laya-serve` — and speaks the same protocol, minus the `routing` metadata block (single checkpoint instead of a Router). Wire contract: [docs/SPEC.md](./docs/SPEC.md).
 
 ## Install
 
@@ -18,17 +30,25 @@ import { createDecider, isLayaError } from 'laya-mlx-client';
 const triage = createDecider({
     url: 'http://127.0.0.1:8000',
     questions: {
-        urgent: { type: 'noul', question: 'Is this message urgent?' },
-        severity: { type: 'score', question: 'How severe is this?', range: [0, 10] },
-        category: { type: 'choice', question: 'What category?', choices: ['billing', 'bug', 'feature'] },
+        urgent: { type: 'noul', instructions: 'Is this message urgent?' },
+        severity: {
+            type: 'score',
+            instructions: 'How severe is this?',
+            criteria: ['low', 'medium', 'high'],
+        },
+        category: {
+            type: 'choice',
+            instructions: 'What category?',
+            criteria: { billing: 'invoices, refunds', bug: 'errors and crashes', feature: 'new requests' },
+        },
     },
 });
 
 const result = await triage('My card was charged twice for the same order.');
 
-result.answers.urgent.probability; // P(true) — number
-result.answers.severity.score; // 0-10
-result.answers.category.option; // 'billing' | 'bug' | 'feature' (literal union)
+result.answers.urgent.noul; // P(true) — number
+result.answers.severity.score; // expected zero-based rubric level (0..2)
+result.answers.category.choice; // 'billing' | 'bug' | 'feature' (literal union)
 // result.answers.nonsense -> compile error: wrong key
 
 try {
@@ -39,6 +59,8 @@ try {
     }
 }
 ```
+
+Choice criteria can also be a plain list of labels: `criteria: ['billing', 'bug', 'feature']`.
 
 ## API
 

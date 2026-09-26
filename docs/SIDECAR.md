@@ -2,6 +2,8 @@
 
 The FastAPI sidecar this client talks to, kept in-tree at [`sidecar/laya-mlx-http.py`](../sidecar/laya-mlx-http.py) so client and wire contract evolve together. This page covers getting it running and testing this package against it.
 
+**What it is:** a thin wrapper around `laya_mlx` (the [independent MLX port](https://github.com/mizorewww/laya-mlx) of Laya) exposing `agent.predict()` over HTTP at the official `POST /v1/systemone` path. It is the Apple Silicon stand-in for upstream's official `laya-serve` server (`pip install "laya[serve]"` — PyTorch, doesn't run on macOS MLX). Same endpoint, same request/response contract; the one difference is `routing`: `laya-serve` routes across three checkpoints and includes a `routing` block, this sidecar runs one checkpoint and omits it. Wire contract: [SPEC.md](./SPEC.md).
+
 ## Prerequisites
 
 - **macOS on Apple Silicon** — the runtime is `laya-mlx` (Apple MLX); it does not run on Linux/x86.
