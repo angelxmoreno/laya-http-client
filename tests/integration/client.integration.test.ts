@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'bun:test';
-import { createClient } from '../../src';
-import { isLayaAuthError, isLayaConnectionError, isLayaTimeoutError, isLayaValidationError } from '../../src/errors';
+import {
+    createClient,
+    isLayaAuthError,
+    isLayaConnectionError,
+    isLayaTimeoutError,
+    isLayaValidationError,
+} from '../../src';
 import { startMockSidecar } from '../helpers/mock-server';
 
 // Integration tier: createClient drives the real fetch/HTTP/parse stack

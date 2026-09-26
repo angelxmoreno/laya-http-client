@@ -1,8 +1,8 @@
-import type { LayaClient } from './client.ts';
-import { createClient } from './client.ts';
-import { LayaError } from './LayaError.ts';
-import { requestSchema, validateAnswers } from './schemas.ts';
-import type { Answers, LayaQuestion, Result } from './types.ts';
+import type { LayaClient } from './client';
+import { createClient } from './client';
+import { LayaError } from './LayaError';
+import { requestSchema, validateAnswers } from './schemas';
+import type { Answers, LayaQuestion, Result } from './types';
 
 /**
  * Binds a question set once; the returned function takes only the state text.

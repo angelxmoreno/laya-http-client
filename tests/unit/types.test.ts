@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { createDecider } from '../../src/decider.ts';
+import { createDecider } from '../../src/decider';
 
 // Type-inference contract: answers are inferred from the bound questions, per
 // type, with `option` narrowed to the literal choice union. A wrong key must be

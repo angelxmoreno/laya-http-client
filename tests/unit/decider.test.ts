@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
-import type { LayaClient } from '../../src/client.ts';
-import { createDecider } from '../../src/decider.ts';
-import { isLayaValidationError } from '../../src/errors.ts';
-import type { SystemOneResponse } from '../../src/types.ts';
+import type { LayaClient } from '../../src/client';
+import { createDecider } from '../../src/decider';
+import { isLayaValidationError } from '../../src/errors';
+import type { SystemOneResponse } from '../../src/types';
 
 const respondWith = (answers: unknown): LayaClient => ({
     request: async () => ({ answers, usage: {}, routing: {} }) as SystemOneResponse,

@@ -1,13 +1,13 @@
-export { createClient, type LayaClient } from './client.ts';
-export { createDecider } from './decider.ts';
+export { createClient, type LayaClient } from './client';
+export { createDecider } from './decider';
 export {
     isLayaAuthError,
     isLayaConnectionError,
     isLayaError,
     isLayaTimeoutError,
     isLayaValidationError,
-} from './errors.ts';
-export { LayaError } from './LayaError.ts';
+} from './errors';
+export { LayaError } from './LayaError';
 export type {
     AnswerFor,
     Answers,
@@ -16,4 +16,4 @@ export type {
     Questions,
     Result,
     SystemOneResponse,
-} from './types.ts';
+} from './types';

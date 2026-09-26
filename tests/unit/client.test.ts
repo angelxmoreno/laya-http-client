@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { createClient } from '../../src/client.ts';
-import { isLayaAuthError, isLayaConnectionError, isLayaTimeoutError, isLayaValidationError } from '../../src/errors.ts';
+import { createClient } from '../../src/client';
+import { isLayaAuthError, isLayaConnectionError, isLayaTimeoutError, isLayaValidationError } from '../../src/errors';
 
 const VALID_BODY = {
     answers: { a: { probability: 0.5 } },

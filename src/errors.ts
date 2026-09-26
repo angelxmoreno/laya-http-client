@@ -1,4 +1,4 @@
-import type { LayaError } from './LayaError.ts';
+import type { LayaError } from './LayaError';
 
 export type LayaErrorCode = LayaError['code'];
 

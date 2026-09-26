@@ -1,6 +1,6 @@
-import { LayaError } from './LayaError.ts';
-import { responseSchema } from './schemas.ts';
-import type { ClientOptions, SystemOneResponse } from './types.ts';
+import { LayaError } from './LayaError';
+import { responseSchema } from './schemas';
+import type { ClientOptions, SystemOneResponse } from './types';
 
 const DEFAULT_URL = 'http://127.0.0.1:8000';
 const DEFAULT_TIMEOUT_MS = 3000;

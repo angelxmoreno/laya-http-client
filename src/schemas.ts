@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { LayaError } from './LayaError.ts';
-import type { LayaQuestion } from './types.ts';
+import { LayaError } from './LayaError';
+import type { LayaQuestion } from './types';
 
 /** Request body for POST /v1/systemone. */
 export const requestSchema = z.object({
