@@ -1,4 +1,4 @@
-# laya-mlx-client
+# laya-http-client
 
 Typed HTTP client for the [Laya](https://github.com/NandhaKishorM/laya) "System 1" decision model over the official `POST /v1/systemone` wire protocol.
 
@@ -14,18 +14,18 @@ Three things share the name, and it matters for compatibility:
 | [NandhaKishorM/laya](https://github.com/NandhaKishorM/laya) | **The official runtime** (`pip install laya`) + `laya[serve]` HTTP server (`laya-serve`, Jev-compatible) | ✅ `POST /v1/systemone` |
 | [mizorewww/laya-mlx](https://github.com/mizorewww/laya-mlx) (HF [`aac6fef/laya-mlx`](https://huggingface.co/aac6fef/laya-mlx)) | Independent Apple-MLX port of the checkpoint + `laya_mlx` runtime. Not affiliated with the official project. | ❌ |
 
-This client targets the **official wire protocol** (`laya-serve`'s `/v1/systemone`). The sidecar we vendor wraps `laya_mlx` — the Apple Silicon stand-in for `laya-serve` — and speaks the same protocol, minus the `routing` metadata block (single checkpoint instead of a Router). Wire contract: [docs/SPEC.md](./docs/SPEC.md).
+This client targets the **official wire protocol** (`laya-serve`'s `/v1/systemone`) — point it at any conforming server. The MLX→HTTP bridge vendored in this repo (`sidecar/`) wraps `laya_mlx`, turning the Apple-MLX port into a server this client (and `laya-serve` consumers) can use — same protocol, minus the `routing` metadata block (single checkpoint instead of a Router). Wire contract: [docs/SPEC.md](./docs/SPEC.md).
 
 ## Install
 
 ```bash
-bun add laya-mlx-client
+bun add laya-http-client
 ```
 
 ## Usage
 
 ```ts
-import { createDecider, isLayaError } from 'laya-mlx-client';
+import { createDecider, isLayaError } from 'laya-http-client';
 
 const triage = createDecider({
     url: 'http://127.0.0.1:8000',
