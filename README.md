@@ -48,9 +48,7 @@ try {
 
 ## Running the sidecar
 
-```bash
-uv run --with laya-mlx --with fastapi --with "uvicorn[standard]" python laya-mlx-http.py
-```
+See [docs/SIDECAR.md](./docs/SIDECAR.md) — prerequisites, env config, and running the smoke tests against a real sidecar.
 
 ## Smoke tests
 
