@@ -1,4 +1,5 @@
 import { afterAll } from 'bun:test';
+import { requestSchema } from '../../src/schemas';
 
 const VALID_BODY = {
     model: 'laya-rl-agent',
@@ -51,6 +52,16 @@ export const startMockSidecar = () => {
             if (body === '"slow"') {
                 await new Promise((resolve) => setTimeout(resolve, 200));
                 return new Response(JSON.stringify(VALID_BODY), { status: 200 });
+            }
+            // Sentinels above opt out; every real request must be a valid
+            // /v1/systemone body, so a serialization/schema regression fails here.
+            try {
+                const parsed = requestSchema.safeParse(JSON.parse(body));
+                if (!parsed.success) {
+                    return new Response(JSON.stringify({ detail: parsed.error.issues[0]?.message }), { status: 422 });
+                }
+            } catch {
+                return new Response('invalid json', { status: 422 });
             }
             return new Response(JSON.stringify(VALID_BODY), { status: 200 });
         },

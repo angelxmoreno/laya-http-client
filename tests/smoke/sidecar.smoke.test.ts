@@ -9,5 +9,6 @@ const url = Bun.env.LAYA_SIDECAR_URL;
 const apiKey = Bun.env.LAYA_API_KEY;
 
 describe.skipIf(!url)('smoke: real sidecar', () => {
-    runClientConformanceSuite({ url: url ?? '', apiKey, timeout: 30000 });
+    // Auth is on iff the env provided a key — exercises the sidecar's 401 path.
+    runClientConformanceSuite({ url: url ?? '', apiKey, requiresAuth: !!apiKey, timeout: 30000 });
 });

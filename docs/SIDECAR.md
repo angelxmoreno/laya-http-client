@@ -47,4 +47,4 @@ LAYA_SIDECAR_URL=http://127.0.0.1:8000 bun test tests/smoke
 LAYA_SIDECAR_URL=http://127.0.0.1:8000 LAYA_API_KEY=secret bun test tests/smoke
 ```
 
-With no `LAYA_API_KEY` on the sidecar, set `requiresAuth` accordingly — the smoke tier skips entirely when `LAYA_SIDECAR_URL` is unset.
+With `LAYA_API_KEY` set on both sides, the smoke tier also exercises the 401 path (`requiresAuth` is derived from `LAYA_API_KEY`). The smoke tier skips entirely when `LAYA_SIDECAR_URL` is unset.
