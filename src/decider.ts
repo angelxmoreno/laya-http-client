@@ -21,7 +21,7 @@ const createDecider = <const Q extends { readonly [K in keyof Q]: LayaQuestion }
     const client: LayaClient = options.client ?? createClient(options);
     const { questions } = options;
 
-    return async (state: string): Promise<Result<Q>> => {
+    return async (state: unknown): Promise<Result<Q>> => {
         const parsedRequest = requestSchema.safeParse({ state, questions });
         if (!parsedRequest.success) {
             throw new LayaError(
@@ -31,12 +31,7 @@ const createDecider = <const Q extends { readonly [K in keyof Q]: LayaQuestion }
         }
         const response = await client.request(parsedRequest.data);
         const answers = validateAnswers(questions, response.answers);
-        return {
-            answers: answers as Answers<Q>,
-            model: response.model,
-            usage: response.usage,
-            routing: response.routing,
-        };
+        return { ...response, answers: answers as Answers<Q> };
     };
 };
 

@@ -2,9 +2,10 @@ import { z } from 'zod';
 import { LayaError } from './LayaError';
 import type { LayaQuestion } from './types';
 
-/** Request body for POST /v1/systemone — mirrors what laya_mlx / upstream laya validate server-side. */
+/** Request body for POST /v1/systemone — mirrors what laya-serve / laya_mlx validate server-side. */
 export const requestSchema = z.object({
-    state: z.string(),
+    // Servers accept string/dict/conversation state (sidecar: `state: Any`) and own its validation.
+    state: z.unknown(),
     questions: z.record(
         z.string(),
         z.union([
@@ -12,14 +13,14 @@ export const requestSchema = z.object({
             z.object({
                 type: z.literal('score'),
                 instructions: z.string().min(1),
-                criteria: z.array(z.string()).min(1),
+                criteria: z.array(z.string()).min(1).readonly(),
             }),
             z.object({
                 type: z.literal('choice'),
                 instructions: z.string().min(1),
                 criteria: z
                     .union([
-                        z.array(z.string()).min(1),
+                        z.array(z.string()).min(1).readonly(),
                         z.record(z.string(), z.string()).refine((d) => Object.keys(d).length > 0, {
                             message: 'choice criteria must be a nonempty dictionary',
                         }),
@@ -38,14 +39,14 @@ const baseAnswer = z.object({
     action: z.object({ act_probability: z.number() }),
 });
 
-const noulAnswer = baseAnswer.extend({ type: z.literal('noul'), noul: z.number().min(0).max(1) });
-const scoreAnswer = baseAnswer.extend({
+export const noulAnswer = baseAnswer.extend({ type: z.literal('noul'), noul: z.number().min(0).max(1) });
+export const scoreAnswer = baseAnswer.extend({
     type: z.literal('score'),
     score: z.number(),
     legend: z.record(z.string(), z.string()),
     probabilities: z.record(z.string(), z.number()),
 });
-const choiceAnswer = baseAnswer.extend({
+export const choiceAnswer = baseAnswer.extend({
     type: z.literal('choice'),
     choice: z.string(),
     probabilities: z.record(z.string(), z.number()),
@@ -99,3 +100,9 @@ export const validateAnswers = (
     }
     return result;
 };
+
+/** Derived wire types — the schemas are the single source of truth. */
+export type WireQuestion = z.infer<typeof requestSchema>['questions'][string];
+export type NoulAnswer = z.infer<typeof noulAnswer>;
+export type ScoreAnswer = z.infer<typeof scoreAnswer>;
+export type ChoiceAnswer = z.infer<typeof choiceAnswer>;
