@@ -1,6 +1,6 @@
 # Sidecar setup: `laya-mlx-http.py`
 
-The FastAPI sidecar this client talks to. The script itself lives in the sidecar project (not this repo); this page covers getting it running and testing this package against it.
+The FastAPI sidecar this client talks to, kept in-tree at [`sidecar/laya-mlx-http.py`](../sidecar/laya-mlx-http.py) so client and wire contract evolve together. This page covers getting it running and testing this package against it.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ## Run
 
 ```bash
-uv run --with laya-mlx --with fastapi --with "uvicorn[standard]" python laya-mlx-http.py
+uv run --with laya-mlx --with fastapi --with "uvicorn[standard]" python sidecar/laya-mlx-http.py
 ```
 
 Loads the model once at startup (`laya.load(...)`, first run downloads it from Hugging Face) and stays warm. Each forward pass is ~33 ms once loaded.
