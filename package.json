@@ -2,6 +2,24 @@
     "name": "laya-mlx-client",
     "version": "0.1.0",
     "description": "Typed HTTP client for the Laya System 1 decision model (FastAPI sidecar).",
+    "author": "Angel S. Moreno <angelxmoreno@gmail.com>",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/angelxmoreno/laya-mlx-client.git"
+    },
+    "bugs": {
+        "url": "https://github.com/angelxmoreno/laya-mlx-client/issues"
+    },
+    "homepage": "https://github.com/angelxmoreno/laya-mlx-client#readme",
+    "keywords": [
+        "laya",
+        "system-1",
+        "decision-model",
+        "http-client",
+        "typescript",
+        "zod"
+    ],
     "type": "module",
     "module": "src/index.ts",
     "main": "src/index.ts",

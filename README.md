@@ -51,3 +51,15 @@ try {
 ```bash
 uv run --with laya-mlx --with fastapi --with "uvicorn[standard]" python laya-mlx-http.py
 ```
+
+## Smoke tests
+
+The smoke tier runs the shared conformance suite against a real sidecar; it is skipped unless `LAYA_SIDECAR_URL` is set:
+
+```bash
+LAYA_SIDECAR_URL=http://127.0.0.1:8000 bun test tests/smoke
+```
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
