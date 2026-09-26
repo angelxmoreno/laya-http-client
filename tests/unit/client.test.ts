@@ -48,6 +48,18 @@ describe('error code mapping', () => {
         }
     });
 
+    test('422 → validation (server rejected the request, not an outage)', async () => {
+        const restore = stubFetch(async () => new Response('bad criteria', { status: 422 }));
+        try {
+            await createClient().request(deciderBody);
+            expect.unreachable();
+        } catch (e) {
+            expect(isLayaValidationError(e)).toBe(true);
+        } finally {
+            restore();
+        }
+    });
+
     test('abort → timeout', async () => {
         const restore = stubFetch(async () => new Promise(() => {}));
         try {
