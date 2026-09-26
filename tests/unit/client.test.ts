@@ -3,9 +3,11 @@ import { createClient } from '../../src/client';
 import { isLayaAuthError, isLayaConnectionError, isLayaTimeoutError, isLayaValidationError } from '../../src/errors';
 
 const VALID_BODY = {
-    answers: { a: { probability: 0.5 } },
-    usage: {},
-    routing: {},
+    model: 'laya-rl-agent',
+    answers: {
+        a: { type: 'noul', noul: 0.5, confidence: 0.5, action: { act_probability: 0.4 } },
+    },
+    usage: { input_tokens: 5, output_tokens: 0 },
 };
 
 type FetchStub = (input: unknown, init?: unknown) => Promise<unknown>;
@@ -17,7 +19,7 @@ const stubFetch = (stub: FetchStub) => {
     };
 };
 
-const deciderBody = { state: 'text', questions: { urgent: { type: 'noul', question: 'q?' } } };
+const deciderBody = { state: 'text', questions: { urgent: { type: 'noul', instructions: 'q?' } } };
 
 describe('error code mapping', () => {
     test('fetch failure → connection', async () => {
@@ -41,6 +43,18 @@ describe('error code mapping', () => {
             expect.unreachable();
         } catch (e) {
             expect(isLayaAuthError(e)).toBe(true);
+        } finally {
+            restore();
+        }
+    });
+
+    test('422 → validation (server rejected the request, not an outage)', async () => {
+        const restore = stubFetch(async () => new Response('bad criteria', { status: 422 }));
+        try {
+            await createClient().request(deciderBody);
+            expect.unreachable();
+        } catch (e) {
+            expect(isLayaValidationError(e)).toBe(true);
         } finally {
             restore();
         }

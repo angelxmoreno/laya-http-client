@@ -1,9 +1,27 @@
 import { afterAll } from 'bun:test';
+import { requestSchema } from '../../src/schemas';
 
 const VALID_BODY = {
-    answers: { urgent: { probability: 0.9 } },
-    usage: { tokens: 3 },
-    routing: { model: 'aac6fef/laya-mlx' },
+    model: 'laya-rl-agent',
+    answers: {
+        urgent: { type: 'noul', noul: 0.9, confidence: 0.9, action: { act_probability: 0.42 } },
+        severity: {
+            type: 'score',
+            score: 1.4,
+            confidence: 0.8,
+            action: { act_probability: 0.42 },
+            legend: { '0': 'low', '1': 'medium', '2': 'high' },
+            probabilities: { '0': 0.2, '1': 0.5, '2': 0.3 },
+        },
+        department: {
+            type: 'choice',
+            choice: 'billing',
+            confidence: 0.94,
+            action: { act_probability: 0.42 },
+            probabilities: { billing: 0.7, technical: 0.3 },
+        },
+    },
+    usage: { input_tokens: 12, output_tokens: 0 },
 };
 
 /** Start an in-process stand-in for the FastAPI sidecar; sentinel request bodies trigger edge cases. */
@@ -34,6 +52,16 @@ export const startMockSidecar = () => {
             if (body === '"slow"') {
                 await new Promise((resolve) => setTimeout(resolve, 200));
                 return new Response(JSON.stringify(VALID_BODY), { status: 200 });
+            }
+            // Sentinels above opt out; every real request must be a valid
+            // /v1/systemone body, so a serialization/schema regression fails here.
+            try {
+                const parsed = requestSchema.safeParse(JSON.parse(body));
+                if (!parsed.success) {
+                    return new Response(JSON.stringify({ detail: parsed.error.issues[0]?.message }), { status: 422 });
+                }
+            } catch {
+                return new Response('invalid json', { status: 422 });
             }
             return new Response(JSON.stringify(VALID_BODY), { status: 200 });
         },

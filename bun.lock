@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "laya-mlx-client",
+      "name": "laya-http-client",
       "dependencies": {
         "zod": "^4.6.5",
       },

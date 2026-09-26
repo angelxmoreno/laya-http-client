@@ -2,25 +2,61 @@ import { z } from 'zod';
 import { LayaError } from './LayaError';
 import type { LayaQuestion } from './types';
 
-/** Request body for POST /v1/systemone. */
+/** Request body for POST /v1/systemone — mirrors what laya-serve / laya_mlx validate server-side. */
 export const requestSchema = z.object({
-    state: z.string(),
+    // Servers accept string/dict/conversation state (sidecar: `state: Any`) and own its validation.
+    state: z.unknown(),
     questions: z.record(
         z.string(),
         z.union([
-            z.object({ type: z.literal('noul'), question: z.string() }),
-            z.object({ type: z.literal('score'), question: z.string(), range: z.tuple([z.number(), z.number()]) }),
-            z.object({ type: z.literal('choice'), question: z.string(), choices: z.array(z.string()) }),
+            z.object({ type: z.literal('noul'), instructions: z.string().min(1) }),
+            z.object({
+                type: z.literal('score'),
+                instructions: z.string().min(1),
+                criteria: z.array(z.string()).min(1).readonly(),
+            }),
+            z.object({
+                type: z.literal('choice'),
+                instructions: z.string().min(1),
+                criteria: z
+                    .union([
+                        z.array(z.string()).min(1).readonly(),
+                        z.record(z.string(), z.string()).refine((d) => Object.keys(d).length > 0, {
+                            message: 'choice criteria must be a nonempty dictionary',
+                        }),
+                    ])
+                    .refine((c) => !(Array.isArray(c) && new Set(c).size !== c.length), {
+                        message: 'choice labels must be unique',
+                    }),
+            }),
         ])
     ),
 });
 
-const noulAnswer = z.object({ probability: z.number() });
-const scoreAnswer = z.object({ score: z.number(), probability: z.number() });
-const choiceAnswer = z.object({ option: z.string(), optionIndex: z.number().int(), probability: z.number() });
+const baseAnswer = z.object({
+    type: z.string(),
+    confidence: z.number(),
+    action: z.object({ act_probability: z.number() }),
+});
+
+export const noulAnswer = baseAnswer.extend({ type: z.literal('noul'), noul: z.number().min(0).max(1) });
+export const scoreAnswer = baseAnswer.extend({
+    type: z.literal('score'),
+    score: z.number(),
+    legend: z.record(z.string(), z.string()),
+    probabilities: z.record(z.string(), z.number()),
+});
+export const choiceAnswer = baseAnswer.extend({
+    type: z.literal('choice'),
+    choice: z.string(),
+    probabilities: z.record(z.string(), z.number()),
+});
+
+const labelsOf = (q: LayaQuestion & { type: 'choice' }): string[] =>
+    Array.isArray(q.criteria) ? [...q.criteria] : Object.keys(q.criteria);
 
 /**
- * Answer schema for one bound question, with range/choices refinements so a
+ * Answer schema for one bound question, with per-question refinements so a
  * server answer outside the question's contract is a `validation` error.
  */
 export const answerSchemaFor = (q: LayaQuestion) => {
@@ -28,23 +64,24 @@ export const answerSchemaFor = (q: LayaQuestion) => {
         case 'noul':
             return noulAnswer;
         case 'score': {
-            const [min, max] = q.range;
-            return scoreAnswer.refine((a) => a.score >= min && a.score <= max, {
-                message: `score outside range [${min}, ${max}]`,
+            const max = q.criteria.length - 1;
+            return scoreAnswer.refine((a) => a.score >= 0 && a.score <= max, {
+                message: `score outside rubric levels 0..${max}`,
             });
         }
         case 'choice':
-            return choiceAnswer.refine((a) => q.choices.includes(a.option), {
-                message: 'option not in choices',
+            return choiceAnswer.refine((a) => labelsOf(q).includes(a.choice), {
+                message: 'choice not among the question criteria',
             });
     }
 };
 
 /** Full response envelope before per-question answer validation. */
 export const responseSchema = z.object({
+    model: z.string(),
     answers: z.record(z.string(), z.unknown()),
-    usage: z.unknown(),
-    routing: z.unknown(),
+    usage: z.object({ input_tokens: z.number(), output_tokens: z.number() }),
+    routing: z.unknown().optional(),
 });
 
 /** Validate the whole `answers` record against a bound question set. */
@@ -63,3 +100,9 @@ export const validateAnswers = (
     }
     return result;
 };
+
+/** Derived wire types — the schemas are the single source of truth. */
+export type WireQuestion = z.infer<typeof requestSchema>['questions'][string];
+export type NoulAnswer = z.infer<typeof noulAnswer>;
+export type ScoreAnswer = z.infer<typeof scoreAnswer>;
+export type ChoiceAnswer = z.infer<typeof choiceAnswer>;

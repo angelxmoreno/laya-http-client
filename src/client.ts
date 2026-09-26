@@ -7,9 +7,9 @@ const DEFAULT_TIMEOUT_MS = 3000;
 const V1_SYSTEMONE = '/v1/systemone';
 
 /**
- * Thin transport for the Laya sidecar. Does the raw `POST /v1/systemone` and
- * returns the parsed (envelope-validated) JSON. Throws `LayaError` on any
- * transport-level failure.
+ * Thin transport for a Laya HTTP server (`/v1/systemone` — laya-serve or the
+ * vendored MLX sidecar). Returns the parsed (envelope-validated) JSON. Throws
+ * `LayaError` on any transport-level failure.
  */
 export const createClient = (options: ClientOptions = {}) => {
     const baseUrl = options.url ?? DEFAULT_URL;
@@ -46,28 +46,33 @@ export const createClient = (options: ClientOptions = {}) => {
             if (e instanceof DOMException && e.name === 'AbortError') {
                 throw new LayaError('timeout', `request timed out after ${timeoutMs}ms`);
             }
-            throw new LayaError('connection', `could not reach Laya sidecar at ${baseUrl}`, { cause: e });
+            throw new LayaError('connection', `could not reach Laya server at ${baseUrl}`, { cause: e });
         }
         clearTimeout(timer);
 
         if (response.status === 401 || response.status === 403) {
-            throw new LayaError('auth', `Laya sidecar rejected credentials (HTTP ${response.status})`);
+            throw new LayaError('auth', `Laya server rejected credentials (HTTP ${response.status})`);
+        }
+        // laya-serve and the sidecar return 422 for requests the model rejects
+        // (bad criteria, option-budget overflow) — that's caller input, not an outage.
+        if (response.status === 422) {
+            throw new LayaError('validation', 'Laya server rejected the request (HTTP 422)');
         }
         if (!response.ok) {
-            throw new LayaError('connection', `Laya sidecar returned HTTP ${response.status}`);
+            throw new LayaError('connection', `Laya server returned HTTP ${response.status}`);
         }
 
         let raw: unknown;
         try {
             raw = await response.json();
         } catch (e) {
-            throw new LayaError('validation', `Laya sidecar response is not valid JSON`, { cause: e });
+            throw new LayaError('validation', `Laya server response is not valid JSON`, { cause: e });
         }
         const parsed = responseSchema.safeParse(raw);
         if (!parsed.success) {
             throw new LayaError(
                 'validation',
-                `malformed Laya response: ${parsed.error.issues[0]?.message ?? 'invalid'}`
+                `malformed Laya server response: ${parsed.error.issues[0]?.message ?? 'invalid'}`
             );
         }
         return parsed.data;
