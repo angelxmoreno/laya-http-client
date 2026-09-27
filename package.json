@@ -1,6 +1,6 @@
 {
     "name": "laya-http-client",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Typed HTTP client for the official Laya System 1 HTTP server (laya-serve / POST /v1/systemone).",
     "author": "Angel S. Moreno <angelxmoreno@gmail.com>",
     "license": "MIT",
